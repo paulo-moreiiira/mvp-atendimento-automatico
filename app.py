@@ -3,6 +3,14 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
+MARCAS_VALIDAS = [
+    "Samsung", "LG", "TCL", "Philco", "Philips",
+    "Sony", "AOC", "Hisense", "Panasonic", "Outra"
+]
+
+SISTEMAS_TV_BOX_VALIDOS = [
+    "Android TV/Google TV", "Fire TV", "Roku", "Outro"
+]
 
 @app.route("/", methods=["GET", "POST"])
 def inicio():
@@ -32,12 +40,8 @@ def inicio():
                 erro = "Selecione o sistema do seu celular."
 
         elif dispositivo == "Smart TV":
-            marcas_validas = [
-                "Samsung", "LG", "TCL", "Philco", "Philips",
-                "Sony", "AOC", "Hisense", "Panasonic", "Outra"
-            ]
 
-            if marca in marcas_validas:
+            if marca in MARCAS_VALIDAS:
                 orientacao = (
                     f"Você selecionou uma Smart TV da marca {marca}. "
                     "Agora é necessário verificar a compatibilidade "
@@ -51,7 +55,7 @@ def inicio():
                 "Android TV/Google TV", "Fire TV", "Roku", "Outro"
             ]
 
-            if sistema in sistemas_validos:
+            if sistema in SISTEMAS_TV_BOX_VALIDOS:
                 orientacao = (
                     f"Você selecionou uma TV Box com sistema {sistema}. "
                     "O próximo passo é verificar a compatibilidade "
