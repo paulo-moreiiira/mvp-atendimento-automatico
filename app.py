@@ -6,12 +6,60 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def inicio():
-    dispositivo = None
+    dispositivo = ""
+    sistema = ""
+    marca = ""
+    orientacao = None
 
     if request.method == "POST":
         dispositivo = request.form.get("dispositivo", "")
+        sistema = request.form.get("sistema", "")
+        marca = request.form.get("marca", "")
 
-    return render_template("index.html", dispositivo=dispositivo)
+        if dispositivo == "Celular":
+            if sistema == "Android":
+                orientacao = (
+                    "Você utiliza Android. O próximo passo é verificar "
+                    "qual aplicativo é compatível com seu aparelho."
+                )
+            elif sistema == "iOS":
+                orientacao = (
+                    "Você utiliza iPhone (iOS). O próximo passo é verificar "
+                    "qual aplicativo é compatível com seu aparelho."
+                )
+
+        elif dispositivo == "Smart TV":
+            marcas_validas = [
+                "Samsung", "LG", "TCL", "Philco", "Philips",
+                "Sony", "AOC", "Hisense", "Panasonic", "Outra"
+            ]
+
+            if marca in marcas_validas:
+                orientacao = (
+                    f"Você selecionou uma Smart TV da marca {marca}. "
+                    "Agora é necessário verificar a compatibilidade "
+                    "do aplicativo com o modelo da televisão."
+                )
+
+        elif dispositivo == "TV Box":
+            sistemas_validos = [
+                "Android TV/Google TV", "Fire TV", "Roku", "Outro"
+            ]
+
+            if sistema in sistemas_validos:
+                orientacao = (
+                    f"Você selecionou uma TV Box com sistema {sistema}. "
+                    "O próximo passo é verificar a compatibilidade "
+                    "do aparelho e orientar a instalação."
+                )
+
+    return render_template(
+        "index.html",
+        dispositivo=dispositivo,
+        sistema=sistema,
+        marca=marca,
+        orientacao=orientacao
+    )
 
 
 if __name__ == "__main__":
