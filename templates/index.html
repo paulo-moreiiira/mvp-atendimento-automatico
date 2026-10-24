@@ -12,7 +12,7 @@
         <header>
             <span class="etiqueta">ATENDIMENTO DIGITAL</span>
             <h1>Olá! Seja bem-vindo(a).</h1>
-            <p>Vamos ajudar você a começar. Primeiro, precisamos saber qual dispositivo você utiliza.</p>
+            <p>Vamos identificar seu dispositivo para apresentar as orientações iniciais.</p>
         </header>
 
         <form method="POST">
@@ -20,19 +20,42 @@
 
             <select id="dispositivo" name="dispositivo" required>
                 <option value="">Selecione uma opção</option>
-                <option value="Celular">Celular</option>
-                <option value="Smart TV">Smart TV</option>
-                <option value="TV Box">TV Box</option>
+                <option value="Celular" {% if dispositivo == "Celular" %}selected{% endif %}>Celular</option>
+                <option value="Smart TV" {% if dispositivo == "Smart TV" %}selected{% endif %}>Smart TV</option>
+                <option value="TV Box" {% if dispositivo == "TV Box" %}selected{% endif %}>TV Box</option>
             </select>
+
+            <div id="campo-sistema" hidden>
+                <label id="label-sistema" for="sistema">Qual é o sistema do aparelho?</label>
+                <select id="sistema" name="sistema">
+                    <option value="">Selecione uma opção</option>
+                </select>
+            </div>
+
+            <div id="campo-marca" hidden>
+                <label for="marca">Qual é a marca da sua Smart TV?</label>
+                <select id="marca" name="marca">
+                    <option value="">Selecione a marca</option>
+                    <option value="Samsung" {% if marca == "Samsung" %}selected{% endif %}>Samsung</option>
+                    <option value="LG" {% if marca == "LG" %}selected{% endif %}>LG</option>
+                    <option value="TCL" {% if marca == "TCL" %}selected{% endif %}>TCL</option>
+                    <option value="Philco" {% if marca == "Philco" %}selected{% endif %}>Philco</option>
+                    <option value="Philips" {% if marca == "Philips" %}selected{% endif %}>Philips</option>
+                    <option value="Sony" {% if marca == "Sony" %}selected{% endif %}>Sony</option>
+                    <option value="AOC" {% if marca == "AOC" %}selected{% endif %}>AOC</option>
+                    <option value="Hisense" {% if marca == "Hisense" %}selected{% endif %}>Hisense</option>
+                    <option value="Panasonic" {% if marca == "Panasonic" %}selected{% endif %}>Panasonic</option>
+                    <option value="Outra" {% if marca == "Outra" %}selected{% endif %}>Outra marca</option>
+                </select>
+            </div>
 
             <button type="submit">Continuar</button>
         </form>
 
-        {% if dispositivo %}
+        {% if orientacao %}
         <section class="resultado" aria-live="polite">
-            <h2>Dispositivo selecionado</h2>
-            <p>Você selecionou: <strong>{{ dispositivo }}</strong>.</p>
-            <p>Na próxima etapa, apresentaremos orientações específicas para o seu dispositivo.</p>
+            <h2>Orientação para seu dispositivo</h2>
+            <p>{{ orientacao }}</p>
         </section>
         {% endif %}
 
@@ -40,5 +63,60 @@
             <p>Atendimento inicial • Demonstração do MVP</p>
         </footer>
     </main>
+
+    <input type="hidden" id="sistema-anterior" value="{{ sistema }}">
+    <script>
+        const dispositivo = document.getElementById("dispositivo");
+        const campoSistema = document.getElementById("campo-sistema");
+        const labelSistema = document.getElementById("label-sistema");
+        const sistema = document.getElementById("sistema");
+        const campoMarca = document.getElementById("campo-marca");
+        const marca = document.getElementById("marca");
+
+        const opcoesSistema = {
+            "Celular": [
+                { valor: "Android", texto: "Android" },
+                { valor: "iOS", texto: "iPhone (iOS)" }
+            ],
+            "TV Box": [
+                { valor: "Android TV/Google TV", texto: "Android TV / Google TV" },
+                { valor: "Fire TV", texto: "Fire TV" },
+                { valor: "Roku", texto: "Roku" },
+                { valor: "Outro", texto: "Outro sistema" }
+            ]
+        };
+
+        function atualizarCampos() {
+            const tipo = dispositivo.value;
+            const mostrarMarca = tipo === "Smart TV";
+            const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
+
+            campoMarca.hidden = !mostrarMarca;
+            marca.required = mostrarMarca;
+
+            campoSistema.hidden = !mostrarSistema;
+            sistema.required = mostrarSistema;
+
+            labelSistema.textContent = tipo === "Celular"
+                ? "Qual é o sistema do seu celular?"
+                : "Qual é o sistema da sua TV Box?";
+
+            sistema.replaceChildren(new Option("Selecione uma opção", ""));
+
+            (opcoesSistema[tipo] || []).forEach(function(opcao) {
+                sistema.add(new Option(opcao.texto, opcao.valor));
+            });
+
+            const sistemaAnterior = document.getElementById("sistema-anterior").value;
+            if (mostrarSistema && opcoesSistema[tipo].some(
+                opcao => opcao.valor === sistemaAnterior
+            )) {
+                sistema.value = sistemaAnterior;
+            }
+        }
+
+        dispositivo.addEventListener("change", atualizarCampos);
+        atualizarCampos();
+    </script>
 </body>
 </html>
