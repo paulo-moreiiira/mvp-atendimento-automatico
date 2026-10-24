@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atendimento Automático</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <span class="etiqueta">ATENDIMENTO DIGITAL</span>
+            <h1>Olá! Seja bem-vindo(a).</h1>
+            <p>Vamos ajudar você a começar. Primeiro, precisamos saber qual dispositivo você utiliza.</p>
+        </header>
+
+        <form method="POST">
+            <label for="dispositivo">Qual é o seu dispositivo?</label>
+
+            <select id="dispositivo" name="dispositivo" required>
+                <option value="">Selecione uma opção</option>
+                <option value="Celular">Celular</option>
+                <option value="Smart TV">Smart TV</option>
+                <option value="TV Box">TV Box</option>
+            </select>
+
+            <button type="submit">Continuar</button>
+        </form>
+
+        {% if dispositivo %}
+        <section class="resultado" aria-live="polite">
+            <h2>Dispositivo selecionado</h2>
+            <p>Você selecionou: <strong>{{ dispositivo }}</strong>.</p>
+            <p>Na próxima etapa, apresentaremos orientações específicas para o seu dispositivo.</p>
+        </section>
+        {% endif %}
+
+        <footer>
+            <p>Atendimento inicial • Demonstração do MVP</p>
+        </footer>
+    </main>
+</body>
+</html>
