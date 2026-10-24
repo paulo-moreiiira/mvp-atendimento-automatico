@@ -95,9 +95,6 @@ function atualizarCampos() {
     const mostrarMarca = tipo === "Smart TV";
     const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
 
-    console.log("Dispositivo selecionado:", tipo);
-console.log("Mostrar marca:", mostrarMarca);
-console.log("Mostrar sistema:", mostrarSistema);
     campoMarca.hidden = !mostrarMarca;
     marca.required = false;
 

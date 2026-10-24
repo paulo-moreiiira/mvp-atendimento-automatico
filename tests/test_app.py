@@ -115,3 +115,34 @@ def test_tv_box_android(cliente):
 
     assert resposta.status_code == 200
     assert "TV Box com sistema Android TV/Google TV" in resposta.get_data(as_text=True)
+
+def test_smart_tv_com_marca_invalida(cliente):
+    resposta = cliente.post(
+        "/",
+        data={
+            "dispositivo": "Smart TV",
+            "sistema": "",
+            "marca": "MarcaInventada",
+        },
+    )
+
+    assert resposta.status_code == 200
+    assert "Selecione a marca da sua Smart TV." in (
+        resposta.get_data(as_text=True)
+    )
+
+
+def test_tv_box_com_sistema_invalido(cliente):
+    resposta = cliente.post(
+        "/",
+        data={
+            "dispositivo": "TV Box",
+            "sistema": "SistemaInventado",
+            "marca": "",
+        },
+    )
+
+    assert resposta.status_code == 200
+    assert "Selecione o sistema da sua TV Box." in (
+        resposta.get_data(as_text=True)
+    )
