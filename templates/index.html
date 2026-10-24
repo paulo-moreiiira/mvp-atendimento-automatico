@@ -18,7 +18,7 @@
         <form method="POST">
             <label for="dispositivo">Qual é o seu dispositivo?</label>
 
-            <select id="dispositivo" name="dispositivo" required>
+            <select id="dispositivo" name="dispositivo">
                 <option value="">Selecione uma opção</option>
                 <option value="Celular" {% if dispositivo == "Celular" %}selected{% endif %}>Celular</option>
                 <option value="Smart TV" {% if dispositivo == "Smart TV" %}selected{% endif %}>Smart TV</option>
@@ -52,12 +52,17 @@
             <button type="submit">Continuar</button>
         </form>
 
-        {% if orientacao %}
-        <section class="resultado" aria-live="polite">
-            <h2>Orientação para seu dispositivo</h2>
-            <p>{{ orientacao }}</p>
-        </section>
-        {% endif %}
+        {% if erro %}
+<section class="resultado" role="alert">
+    <h2>Confira sua seleção</h2>
+    <p>{{ erro }}</p>
+</section>
+{% elif orientacao %}
+<section class="resultado" aria-live="polite">
+    <h2>Orientação para seu dispositivo</h2>
+    <p>{{ orientacao }}</p>
+</section>
+{% endif %}
 
         <footer>
             <p>Atendimento inicial • Demonstração do MVP</p>
@@ -85,38 +90,47 @@
                 { valor: "Outro", texto: "Outro sistema" }
             ]
         };
+function atualizarCampos() {
+    const tipo = dispositivo.value;
+    const mostrarMarca = tipo === "Smart TV";
+    const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
 
-        function atualizarCampos() {
-            const tipo = dispositivo.value;
-            const mostrarMarca = tipo === "Smart TV";
-            const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
+    console.log("Dispositivo selecionado:", tipo);
+console.log("Mostrar marca:", mostrarMarca);
+console.log("Mostrar sistema:", mostrarSistema);
+    campoMarca.hidden = !mostrarMarca;
+    marca.required = false;
 
-            campoMarca.hidden = !mostrarMarca;
-            marca.required = mostrarMarca;
+    campoSistema.hidden = !mostrarSistema;
+    sistema.required = false;
 
-            campoSistema.hidden = !mostrarSistema;
-            sistema.required = mostrarSistema;
+    labelSistema.textContent = tipo === "TV Box"
+        ? "Qual é o sistema da sua TV Box?"
+        : "Qual é o sistema do seu celular?";
 
-            labelSistema.textContent = tipo === "Celular"
-                ? "Qual é o sistema do seu celular?"
-                : "Qual é o sistema da sua TV Box?";
+    sistema.replaceChildren(new Option("Selecione uma opção", ""));
 
-            sistema.replaceChildren(new Option("Selecione uma opção", ""));
+    (opcoesSistema[tipo] || []).forEach(function(opcao) {
+        sistema.add(new Option(opcao.texto, opcao.valor));
+    });
 
-            (opcoesSistema[tipo] || []).forEach(function(opcao) {
-                sistema.add(new Option(opcao.texto, opcao.valor));
-            });
+    const sistemaAnterior = document.getElementById("sistema-anterior").value;
 
-            const sistemaAnterior = document.getElementById("sistema-anterior").value;
-            if (mostrarSistema && opcoesSistema[tipo].some(
-                opcao => opcao.valor === sistemaAnterior
-            )) {
-                sistema.value = sistemaAnterior;
-            }
-        }
+    if (mostrarSistema && opcoesSistema[tipo].some(
+        opcao => opcao.valor === sistemaAnterior
+    )) {
+        sistema.value = sistemaAnterior;
+    }
+}
 
-        dispositivo.addEventListener("change", atualizarCampos);
-        atualizarCampos();
+dispositivo.addEventListener("change", function () {
+    atualizarCampos();
+});
+
+window.addEventListener("pageshow", atualizarCampos);
+
+atualizarCampos();
+
     </script>
 </body>
 </html>

@@ -10,6 +10,7 @@ def inicio():
     sistema = ""
     marca = ""
     orientacao = None
+    erro = None
 
     if request.method == "POST":
         dispositivo = request.form.get("dispositivo", "")
@@ -27,6 +28,8 @@ def inicio():
                     "Você utiliza iPhone (iOS). O próximo passo é verificar "
                     "qual aplicativo é compatível com seu aparelho."
                 )
+            else:
+                erro = "Selecione o sistema do seu celular."
 
         elif dispositivo == "Smart TV":
             marcas_validas = [
@@ -40,6 +43,8 @@ def inicio():
                     "Agora é necessário verificar a compatibilidade "
                     "do aplicativo com o modelo da televisão."
                 )
+            else:
+                erro = "Selecione a marca da sua Smart TV."
 
         elif dispositivo == "TV Box":
             sistemas_validos = [
@@ -52,13 +57,19 @@ def inicio():
                     "O próximo passo é verificar a compatibilidade "
                     "do aparelho e orientar a instalação."
                 )
+            else:
+                erro = "Selecione o sistema da sua TV Box."
+
+        else:
+            erro = "Selecione um dispositivo válido."
 
     return render_template(
         "index.html",
         dispositivo=dispositivo,
         sistema=sistema,
         marca=marca,
-        orientacao=orientacao
+        orientacao=orientacao,
+        erro=erro
     )
 
 
