@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -57,10 +57,43 @@
         {% elif orientacao %}
         <section class="resultado" aria-live="polite">
             <h2>Aplicativo recomendado</h2>
+
             {% if aplicativo %}
+            <div class="aplicativo-card">
+                {% set imagens = {
+                    '2TPlay': '2tplay.png',
+                    'Max+': 'maxplus.png',
+                    'MAX+': 'maxplus.png',
+                    'XCIPTV': 'xciptv.png',
+                    'Smarters Player Lite': 'smarters-player-lite.png'
+                } %}
+
+                {% if aplicativo in imagens %}
+                <img
+                    class="imagem-aplicativo"
+                    src="{{ url_for('static', filename='img/' + imagens[aplicativo]) }}"
+                    alt="Ícone do aplicativo {{ aplicativo }}"
+                    onerror="this.style.display='none'"
+                >
+                {% endif %}
+
                 <p class="nome-aplicativo">{{ aplicativo }}</p>
+            </div>
             {% endif %}
+
             <p>{{ orientacao }}</p>
+
+            <div class="ajuda-whatsapp">
+                <p>Não encontrou o aplicativo ou precisa de ajuda?</p>
+                <a
+                    class="botao-whatsapp"
+                    href="https://wa.me/5531984539766?text=Ol%C3%A1%21%20Preciso%20de%20ajuda%20para%20encontrar%20o%20aplicativo%20recomendado%20no%20meu%20aparelho."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Falar com o vendedor pelo WhatsApp
+                </a>
+            </div>
         </section>
         {% endif %}
 
@@ -129,3 +162,4 @@
     </script>
 </body>
 </html>
+```
