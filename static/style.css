@@ -132,3 +132,55 @@ footer {
     border-left-color: #dc2626;
     color: #991b1b;
 }
+```css
+/* Cartão do aplicativo recomendado */
+.aplicativo-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 18px 0;
+    padding: 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.imagem-aplicativo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.nome-aplicativo {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: bold;
+}
+
+/* Área de contato */
+.ajuda-whatsapp {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.botao-whatsapp {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: #25D366;
+    color: #ffffff;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+}
+
+.botao-whatsapp:hover {
+    filter: brightness(0.92);
+}
+
+.botao-whatsapp:focus-visible {
+    outline: 3px solid #ff9800;
+    outline-offset: 3px;
+}
