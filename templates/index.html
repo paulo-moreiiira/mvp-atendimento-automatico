@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atendimento Automático</title>
+    <title>Atendimento Digital</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -12,13 +12,12 @@
         <header>
             <span class="etiqueta">ATENDIMENTO DIGITAL</span>
             <h1>Olá! Seja bem-vindo(a).</h1>
-            <p>Vamos identificar seu dispositivo para apresentar as orientações iniciais.</p>
+            <p>Vamos identificar seu dispositivo para apresentar o aplicativo recomendado e as orientações iniciais.</p>
         </header>
 
         <form method="POST">
             <label for="dispositivo">Qual é o seu dispositivo?</label>
-
-            <select id="dispositivo" name="dispositivo">
+            <select id="dispositivo" name="dispositivo" required>
                 <option value="">Selecione uma opção</option>
                 <option value="Celular" {% if dispositivo == "Celular" %}selected{% endif %}>Celular</option>
                 <option value="Smart TV" {% if dispositivo == "Smart TV" %}selected{% endif %}>Smart TV</option>
@@ -43,8 +42,6 @@
                     <option value="Philips" {% if marca == "Philips" %}selected{% endif %}>Philips</option>
                     <option value="Sony" {% if marca == "Sony" %}selected{% endif %}>Sony</option>
                     <option value="AOC" {% if marca == "AOC" %}selected{% endif %}>AOC</option>
-                    <option value="Hisense" {% if marca == "Hisense" %}selected{% endif %}>Hisense</option>
-                    <option value="Panasonic" {% if marca == "Panasonic" %}selected{% endif %}>Panasonic</option>
                     <option value="Outra" {% if marca == "Outra" %}selected{% endif %}>Outra marca</option>
                 </select>
             </div>
@@ -53,16 +50,19 @@
         </form>
 
         {% if erro %}
-<section class="resultado" role="alert">
-    <h2>Confira sua seleção</h2>
-    <p>{{ erro }}</p>
-</section>
-{% elif orientacao %}
-<section class="resultado" aria-live="polite">
-    <h2>Orientação para seu dispositivo</h2>
-    <p>{{ orientacao }}</p>
-</section>
-{% endif %}
+        <section class="resultado erro" role="alert">
+            <h2>Confira sua seleção</h2>
+            <p>{{ erro }}</p>
+        </section>
+        {% elif orientacao %}
+        <section class="resultado" aria-live="polite">
+            <h2>Aplicativo recomendado</h2>
+            {% if aplicativo %}
+                <p class="nome-aplicativo">{{ aplicativo }}</p>
+            {% endif %}
+            <p>{{ orientacao }}</p>
+        </section>
+        {% endif %}
 
         <footer>
             <p>Atendimento inicial • Demonstração do MVP</p>
@@ -70,6 +70,7 @@
     </main>
 
     <input type="hidden" id="sistema-anterior" value="{{ sistema }}">
+
     <script>
         const dispositivo = document.getElementById("dispositivo");
         const campoSistema = document.getElementById("campo-sistema");
@@ -90,44 +91,41 @@
                 { valor: "Outro", texto: "Outro sistema" }
             ]
         };
-function atualizarCampos() {
-    const tipo = dispositivo.value;
-    const mostrarMarca = tipo === "Smart TV";
-    const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
 
-    campoMarca.hidden = !mostrarMarca;
-    marca.required = false;
+        function atualizarCampos() {
+            const tipo = dispositivo.value;
+            const mostrarMarca = tipo === "Smart TV";
+            const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
 
-    campoSistema.hidden = !mostrarSistema;
-    sistema.required = false;
+            campoMarca.hidden = !mostrarMarca;
+            marca.required = mostrarMarca;
 
-    labelSistema.textContent = tipo === "TV Box"
-        ? "Qual é o sistema da sua TV Box?"
-        : "Qual é o sistema do seu celular?";
+            campoSistema.hidden = !mostrarSistema;
+            sistema.required = mostrarSistema;
 
-    sistema.replaceChildren(new Option("Selecione uma opção", ""));
+            labelSistema.textContent = tipo === "TV Box"
+                ? "Qual é o sistema da sua TV Box?"
+                : "Qual é o sistema do seu celular?";
 
-    (opcoesSistema[tipo] || []).forEach(function(opcao) {
-        sistema.add(new Option(opcao.texto, opcao.valor));
-    });
+            sistema.replaceChildren(new Option("Selecione uma opção", ""));
 
-    const sistemaAnterior = document.getElementById("sistema-anterior").value;
+            (opcoesSistema[tipo] || []).forEach(function(opcao) {
+                sistema.add(new Option(opcao.texto, opcao.valor));
+            });
 
-    if (mostrarSistema && opcoesSistema[tipo].some(
-        opcao => opcao.valor === sistemaAnterior
-    )) {
-        sistema.value = sistemaAnterior;
-    }
-}
+            const sistemaAnterior = document.getElementById("sistema-anterior").value;
 
-dispositivo.addEventListener("change", function () {
-    atualizarCampos();
-});
+            if (mostrarSistema && opcoesSistema[tipo].some(
+                opcao => opcao.valor === sistemaAnterior
+            )) {
+                sistema.value = sistemaAnterior;
+            }
+        }
 
-window.addEventListener("pageshow", atualizarCampos);
+        dispositivo.addEventListener("change", atualizarCampos);
+        window.addEventListener("pageshow", atualizarCampos);
 
-atualizarCampos();
-
+        atualizarCampos();
     </script>
 </body>
 </html>
