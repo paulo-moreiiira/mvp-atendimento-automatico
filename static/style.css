@@ -114,3 +114,20 @@ select:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible
     .resumo dl div { display: block; }
     .resumo dd { text-align: left; }
 }
+
+/* Mensagens personalizadas de validação */
+.mensagem-campo {
+    color: #f0c75e;
+    background: rgba(212, 175, 55, 0.10);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-left: 3px solid #d4af37;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 8px 0 14px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.mensagem-campo[hidden] {
+    display: none;
+}

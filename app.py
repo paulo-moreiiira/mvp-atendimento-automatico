@@ -1,3 +1,4 @@
+
 from urllib.parse import quote
 
 from flask import Flask, render_template, request
@@ -45,61 +46,78 @@ IMAGENS_APLICATIVOS = {
 
 def recomendar_aplicativo(dispositivo, sistema, marca):
     """Retorna o aplicativo indicado e a orientação correspondente."""
+
     if dispositivo == "Celular":
         if sistema not in SISTEMAS_CELULAR:
             return None, None, "Selecione o sistema do seu celular."
+
         aplicativo = SISTEMAS_CELULAR[sistema]
+
         orientacao = (
             f"Para seu celular ({sistema}), recomendamos o aplicativo "
             f"{aplicativo}. Procure pelo nome na loja oficial do aparelho."
         )
+
         return aplicativo, orientacao, None
 
     if dispositivo == "Smart TV":
         if marca not in MARCAS_VALIDAS:
             return None, None, "Selecione uma marca válida para sua Smart TV."
+
         aplicativo = APLICATIVOS_SMART_TV[marca]
+
         if not aplicativo:
             return None, (
                 "Não temos uma recomendação automática para essa marca. "
                 "Entre em contato com o vendedor para receber orientação."
             ), None
+
         orientacao = (
             f"Para sua Smart TV {marca}, recomendamos o aplicativo "
             f"{aplicativo}. Procure pelo nome na loja de aplicativos da "
             "televisão. A disponibilidade pode variar conforme o modelo."
         )
+
         return aplicativo, orientacao, None
 
     if dispositivo == "TV Box":
         if sistema not in SISTEMAS_TV_BOX:
             return None, None, "Selecione um sistema válido para sua TV Box."
+
         aplicativo = SISTEMAS_TV_BOX[sistema]
+
         if not aplicativo:
             return None, (
                 "Para esse sistema, entre em contato com o vendedor para "
                 "receber orientação sobre o aplicativo adequado."
             ), None
+
         orientacao = (
             f"Para sua TV Box com sistema {sistema}, recomendamos o "
             f"aplicativo {aplicativo}. Procure pelo nome na loja do aparelho."
         )
+
         return aplicativo, orientacao, None
 
     return None, None, "Selecione um dispositivo válido."
 
 
 def criar_link_whatsapp(dados):
+    """Gera o link de atendimento com as informações do cliente."""
+
     linhas = [
         "Olá! Gostaria de continuar meu atendimento pela PHX Stream.",
         "",
         "INFORMAÇÕES DO APARELHO:",
         f"Dispositivo: {dados['dispositivo']}",
     ]
+
     if dados.get("marca"):
         linhas.append(f"Marca: {dados['marca']}")
+
     if dados.get("sistema"):
         linhas.append(f"Sistema: {dados['sistema']}")
+
     linhas.extend([
         f"Aplicativo recomendado: {dados.get('aplicativo') or 'Orientação necessária'}",
         f"Encontrou o aplicativo: {dados.get('encontrou') or 'Não informado'}",
@@ -107,11 +125,15 @@ def criar_link_whatsapp(dados):
         "",
         "Aguardo ajuda para continuar o atendimento.",
     ])
-    return f"https://wa.me/{WHATSAPP_NUMERO}?text={quote(chr(10).join(linhas))}"
+
+    mensagem = quote("\n".join(linhas))
+
+    return f"https://wa.me/{WHATSAPP_NUMERO}?text={mensagem}"
 
 
 @app.route("/", methods=["GET", "POST"])
 def inicio():
+
     dados = {
         "dispositivo": "",
         "sistema": "",
@@ -119,6 +141,7 @@ def inicio():
         "encontrou": "",
         "baixou": "",
     }
+
     etapa = "identificacao"
     aplicativo = None
     orientacao = None
@@ -127,30 +150,60 @@ def inicio():
     imagem_aplicativo = None
 
     if request.method == "POST":
+
         for campo in dados:
             dados[campo] = request.form.get(campo, "").strip()
-        etapa = request.form.get("etapa", "identificacao")
-        aplicativo, orientacao, erro = recomendar_aplicativo(
-            dados["dispositivo"], dados["sistema"], dados["marca"]
-        )
-        imagem_aplicativo = IMAGENS_APLICATIVOS.get(aplicativo)
 
-        if not erro and etapa == "confirmacao":
-            encontrou = dados["encontrou"]
-            baixou = dados["baixou"]
-            if encontrou not in {"Sim", "Não"}:
-                erro = "Informe se conseguiu localizar o aplicativo."
-            elif encontrou == "Sim" and baixou not in {"Sim", "Não"}:
-                erro = "Informe se conseguiu baixar e instalar o aplicativo."
-            elif encontrou == "Não":
-                dados["baixou"] = "Não se aplica"
-                link_whatsapp = criar_link_whatsapp(dados)
-                etapa = "resumo"
-            else:
-                link_whatsapp = criar_link_whatsapp(dados)
-                etapa = "resumo"
-        elif not erro:
-            etapa = "confirmacao"
+        etapa_enviada = request.form.get("etapa", "identificacao")
+
+        # Validação da etapa de identificação
+        if etapa_enviada == "identificacao":
+
+            aplicativo, orientacao, erro = recomendar_aplicativo(
+                dados["dispositivo"],
+                dados["sistema"],
+                dados["marca"]
+            )
+
+            if not erro:
+                etapa = "confirmacao"
+
+        # Validação da etapa de confirmação
+        elif etapa_enviada == "confirmacao":
+
+            aplicativo, orientacao, erro = recomendar_aplicativo(
+                dados["dispositivo"],
+                dados["sistema"],
+                dados["marca"]
+            )
+
+            if not erro:
+
+                encontrou = dados["encontrou"]
+                baixou = dados["baixou"]
+
+                if encontrou not in {"Sim", "Não"}:
+                    erro = "Informe se conseguiu localizar o aplicativo."
+
+                elif encontrou == "Sim" and baixou not in {"Sim", "Não"}:
+                    erro = "Informe se conseguiu baixar e instalar o aplicativo."
+
+                elif encontrou == "Não":
+                    dados["baixou"] = "Não se aplica"
+                    etapa = "resumo"
+
+                else:
+                    etapa = "resumo"
+
+                if not erro:
+                    dados["aplicativo"] = aplicativo
+                    link_whatsapp = criar_link_whatsapp(dados)
+
+        else:
+            erro = "Etapa inválida. Inicie um novo atendimento."
+            etapa = "identificacao"
+
+        imagem_aplicativo = IMAGENS_APLICATIVOS.get(aplicativo)
 
     return render_template(
         "index.html",
