@@ -1,165 +1,181 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atendimento Digital</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101010">
+    <title>PHX Stream | Pré-atendimento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <main class="container">
-        <header>
-            <span class="etiqueta">ATENDIMENTO DIGITAL</span>
-            <h1>Olá! Seja bem-vindo(a).</h1>
-            <p>Vamos identificar seu dispositivo para apresentar o aplicativo recomendado e as orientações iniciais.</p>
-        </header>
+    <main class="container">
+        <header class="cabecalho">
+            <img class="logo" src="{{ url_for('static', filename='img/logo-phx.png') }}"
+                 alt="PHX Stream — O melhor conteúdo, sem limites">
+            <span class="etiqueta">PRÉ-ATENDIMENTO</span>
+            <h1>Olá! Seja bem-vindo(a).</h1>
+            <p>Vamos identificar seu aparelho e indicar o aplicativo adequado para você continuar o atendimento.</p>
+        </header>
 
-        <form method="POST">
-            <label for="dispositivo">Qual é o seu dispositivo?</label>
-            <select id="dispositivo" name="dispositivo" required>
-                <option value="">Selecione uma opção</option>
-                <option value="Celular" {% if dispositivo == "Celular" %}selected{% endif %}>Celular</option>
-                <option value="Smart TV" {% if dispositivo == "Smart TV" %}selected{% endif %}>Smart TV</option>
-                <option value="TV Box" {% if dispositivo == "TV Box" %}selected{% endif %}>TV Box</option>
-            </select>
+        {% if erro %}
+        <section class="resultado erro" role="alert">
+            <h2>Confira suas informações</h2>
+            <p>{{ erro }}</p>
+        </section>
+        {% endif %}
 
-            <div id="campo-sistema" hidden>
-                <label id="label-sistema" for="sistema">Qual é o sistema do aparelho?</label>
-                <select id="sistema" name="sistema">
-                    <option value="">Selecione uma opção</option>
-                </select>
-            </div>
+        {% if etapa == 'identificacao' %}
+        <form method="POST" class="formulario">
+            <input type="hidden" name="etapa" value="identificacao">
+            <label for="dispositivo">1. Qual é o seu dispositivo?</label>
+            <select id="dispositivo" name="dispositivo" required>
+                <option value="">Selecione uma opção</option>
+                <option value="Celular" {% if dados.dispositivo == 'Celular' %}selected{% endif %}>Celular</option>
+                <option value="Smart TV" {% if dados.dispositivo == 'Smart TV' %}selected{% endif %}>Smart TV</option>
+                <option value="TV Box" {% if dados.dispositivo == 'TV Box' %}selected{% endif %}>TV Box</option>
+            </select>
 
-            <div id="campo-marca" hidden>
-                <label for="marca">Qual é a marca da sua Smart TV?</label>
-                <select id="marca" name="marca">
-                    <option value="">Selecione a marca</option>
-                    <option value="Samsung" {% if marca == "Samsung" %}selected{% endif %}>Samsung</option>
-                    <option value="LG" {% if marca == "LG" %}selected{% endif %}>LG</option>
-                    <option value="TCL" {% if marca == "TCL" %}selected{% endif %}>TCL</option>
-                    <option value="Philco" {% if marca == "Philco" %}selected{% endif %}>Philco</option>
-                    <option value="Philips" {% if marca == "Philips" %}selected{% endif %}>Philips</option>
-                    <option value="Sony" {% if marca == "Sony" %}selected{% endif %}>Sony</option>
-                    <option value="AOC" {% if marca == "AOC" %}selected{% endif %}>AOC</option>
-                    <option value="Outra" {% if marca == "Outra" %}selected{% endif %}>Outra marca</option>
-                </select>
-            </div>
+            <div id="campo-sistema" hidden>
+                <label id="label-sistema" for="sistema">Qual é o sistema do aparelho?</label>
+                <select id="sistema" name="sistema">
+                    <option value="">Selecione uma opção</option>
+                </select>
+            </div>
 
-            <button type="submit">Continuar</button>
-        </form>
+            <div id="campo-marca" hidden>
+                <label for="marca">Qual é a marca da sua Smart TV?</label>
+                <select id="marca" name="marca">
+                    <option value="">Selecione a marca</option>
+                    {% for nome in ['Samsung', 'LG', 'TCL', 'Philco', 'Philips', 'Sony', 'AOC', 'Outra'] %}
+                    <option value="{{ nome }}" {% if dados.marca == nome %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="botao-principal">Ver aplicativo recomendado</button>
+        </form>
+        {% endif %}
 
-        {% if erro %}
-        <section class="resultado erro" role="alert">
-            <h2>Confira sua seleção</h2>
-            <p>{{ erro }}</p>
-        </section>
-        {% elif orientacao %}
-        <section class="resultado" aria-live="polite">
-            <h2>Aplicativo recomendado</h2>
+        {% if etapa in ['confirmacao', 'resumo'] and orientacao %}
+        <section class="resultado" aria-live="polite">
+            <span class="etiqueta">RECOMENDAÇÃO</span>
+            <h2>Aplicativo indicado para seu aparelho</h2>
+            {% if aplicativo %}
+            <div class="aplicativo-card">
+                {% if imagem_aplicativo %}
+                <img class="imagem-aplicativo"
+                     src="{{ url_for('static', filename='img/' + imagem_aplicativo) }}"
+                     alt="Ícone do aplicativo {{ aplicativo }}">
+                {% endif %}
+                <strong class="nome-aplicativo">{{ aplicativo }}</strong>
+            </div>
+            {% else %}
+            <p class="aviso">Precisamos de uma orientação personalizada para seu aparelho.</p>
+            {% endif %}
+            <p>{{ orientacao }}</p>
+        </section>
+        {% endif %}
 
-            {% if aplicativo %}
-            <div class="aplicativo-card">
-                {% set imagens = {
-                    '2TPlay': '2tplay.png',
-                    'Max+': 'maxplus.png',
-                    'MAX+': 'maxplus.png',
-                    'XCIPTV': 'xciptv.png',
-                    'Smarters Player Lite': 'smarters-player-lite.png'
-                } %}
+        {% if etapa == 'confirmacao' %}
+        <form method="POST" class="formulario formulario-secundario">
+            <input type="hidden" name="etapa" value="confirmacao">
+            <input type="hidden" name="dispositivo" value="{{ dados.dispositivo }}">
+            <input type="hidden" name="sistema" value="{{ dados.sistema }}">
+            <input type="hidden" name="marca" value="{{ dados.marca }}">
+            <h2>Você conseguiu localizar o aplicativo?</h2>
+            <p class="texto-ajuda">Procure pelo nome indicado na loja de aplicativos do seu aparelho.</p>
+            <div class="opcoes">
+                <label class="opcao"><input type="radio" name="encontrou" value="Sim" required> Sim, encontrei</label>
+                <label class="opcao"><input type="radio" name="encontrou" value="Não" required> Não encontrei</label>
+            </div>
+            <div id="campo-download" hidden>
+                <h2>Conseguiu baixar e instalar?</h2>
+                <div class="opcoes">
+                    <label class="opcao"><input type="radio" name="baixou" value="Sim"> Sim, consegui</label>
+                    <label class="opcao"><input type="radio" name="baixou" value="Não"> Não consegui</label>
+                </div>
+            </div>
+            <button type="submit" class="botao-principal">Ver resumo do atendimento</button>
+        </form>
+        {% endif %}
 
-                {% if aplicativo in imagens %}
-                <img
-                    class="imagem-aplicativo"
-                    src="{{ url_for('static', filename='img/' + imagens[aplicativo]) }}"
-                    alt="Ícone do aplicativo {{ aplicativo }}"
-                    onerror="this.style.display='none'"
-                >
-                {% endif %}
+        {% if etapa == 'resumo' and link_whatsapp %}
+        <section class="resultado resumo" aria-live="polite">
+            <span class="etiqueta">RESUMO DO ATENDIMENTO</span>
+            <h2>Confira seus dados</h2>
+            <dl>
+                <div><dt>Dispositivo</dt><dd>{{ dados.dispositivo }}</dd></div>
+                {% if dados.marca %}<div><dt>Marca</dt><dd>{{ dados.marca }}</dd></div>{% endif %}
+                {% if dados.sistema %}<div><dt>Sistema</dt><dd>{{ dados.sistema }}</dd></div>{% endif %}
+                <div><dt>Aplicativo recomendado</dt><dd>{{ aplicativo or 'Orientação necessária' }}</dd></div>
+                <div><dt>Encontrou o aplicativo?</dt><dd>{{ dados.encontrou }}</dd></div>
+                <div><dt>Conseguiu baixar?</dt><dd>{{ dados.baixou }}</dd></div>
+            </dl>
+            <p>Se estiver tudo correto, clique abaixo para enviar essas informações à nossa equipe pelo WhatsApp.</p>
+            <a class="botao-whatsapp" href="{{ link_whatsapp }}" target="_blank" rel="noopener noreferrer">
+                Finalizar atendimento pelo WhatsApp
+            </a>
+            <a class="link-reiniciar" href="{{ url_for('inicio') }}">Iniciar um novo atendimento</a>
+        </section>
+        {% endif %}
 
-                <p class="nome-aplicativo">{{ aplicativo }}</p>
-            </div>
-            {% endif %}
+        <footer><p>PHX Stream • O melhor conteúdo, sem limites</p></footer>
+    </main>
 
-            <p>{{ orientacao }}</p>
+    <input type="hidden" id="sistema-anterior" value="{{ dados.sistema }}">
+    <script>
+        const dispositivo = document.getElementById('dispositivo');
+        const campoSistema = document.getElementById('campo-sistema');
+        const sistema = document.getElementById('sistema');
+        const campoMarca = document.getElementById('campo-marca');
+        const marca = document.getElementById('marca');
+        const campoDownload = document.getElementById('campo-download');
+        const opcoesSistema = {
+            'Celular': [
+                { valor: 'Android', texto: 'Android' },
+                { valor: 'iOS', texto: 'iPhone (iOS)' }
+            ],
+            'TV Box': [
+                { valor: 'Android TV/Google TV', texto: 'Android TV / Google TV' },
+                { valor: 'Fire TV', texto: 'Fire TV' },
+                { valor: 'Roku', texto: 'Roku' },
+                { valor: 'Outro', texto: 'Outro sistema' }
+            ]
+        };
 
-            <div class="ajuda-whatsapp">
-                <p>Não encontrou o aplicativo ou precisa de ajuda?</p>
-                <a
-                    class="botao-whatsapp"
-                    href="https://wa.me/5531984539766?text=Ol%C3%A1%21%20Preciso%20de%20ajuda%20para%20encontrar%20o%20aplicativo%20recomendado%20no%20meu%20aparelho."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Falar com o vendedor pelo WhatsApp
-                </a>
-            </div>
-        </section>
-        {% endif %}
-
-        <footer>
-            <p>Atendimento inicial • Demonstração do MVP</p>
-        </footer>
-    </main>
-
-    <input type="hidden" id="sistema-anterior" value="{{ sistema }}">
-
-    <script>
-        const dispositivo = document.getElementById("dispositivo");
-        const campoSistema = document.getElementById("campo-sistema");
-        const labelSistema = document.getElementById("label-sistema");
-        const sistema = document.getElementById("sistema");
-        const campoMarca = document.getElementById("campo-marca");
-        const marca = document.getElementById("marca");
-
-        const opcoesSistema = {
-            "Celular": [
-                { valor: "Android", texto: "Android" },
-                { valor: "iOS", texto: "iPhone (iOS)" }
-            ],
-            "TV Box": [
-                { valor: "Android TV/Google TV", texto: "Android TV / Google TV" },
-                { valor: "Fire TV", texto: "Fire TV" },
-                { valor: "Roku", texto: "Roku" },
-                { valor: "Outro", texto: "Outro sistema" }
-            ]
-        };
-
-        function atualizarCampos() {
-            const tipo = dispositivo.value;
-            const mostrarMarca = tipo === "Smart TV";
-            const mostrarSistema = tipo === "Celular" || tipo === "TV Box";
-
-            campoMarca.hidden = !mostrarMarca;
-            marca.required = mostrarMarca;
-
-            campoSistema.hidden = !mostrarSistema;
-            sistema.required = mostrarSistema;
-
-            labelSistema.textContent = tipo === "TV Box"
-                ? "Qual é o sistema da sua TV Box?"
-                : "Qual é o sistema do seu celular?";
-
-            sistema.replaceChildren(new Option("Selecione uma opção", ""));
-
-            (opcoesSistema[tipo] || []).forEach(function(opcao) {
-                sistema.add(new Option(opcao.texto, opcao.valor));
-            });
-
-            const sistemaAnterior = document.getElementById("sistema-anterior").value;
-
-            if (mostrarSistema && opcoesSistema[tipo].some(
-                opcao => opcao.valor === sistemaAnterior
-            )) {
-                sistema.value = sistemaAnterior;
-            }
-        }
-
-        dispositivo.addEventListener("change", atualizarCampos);
-        window.addEventListener("pageshow", atualizarCampos);
-
-        atualizarCampos();
-    </script>
+        function atualizarCampos() {
+            if (!dispositivo) return;
+            const tipo = dispositivo.value;
+            const mostrarMarca = tipo === 'Smart TV';
+            const mostrarSistema = tipo === 'Celular' || tipo === 'TV Box';
+            campoMarca.hidden = !mostrarMarca;
+            marca.required = mostrarMarca;
+            campoSistema.hidden = !mostrarSistema;
+            sistema.required = mostrarSistema;
+            document.getElementById('label-sistema').textContent = tipo === 'TV Box'
+                ? 'Qual é o sistema da sua TV Box?' : 'Qual é o sistema do seu celular?';
+            sistema.replaceChildren(**new** Option('Selecione uma opção', ''));
+            (opcoesSistema[tipo] || []).forEach(opcao => sistema.add(**new** Option(opcao.texto, opcao.valor)));
+            const anterior = document.getElementById('sistema-anterior').value;
+            if (mostrarSistema && (opcoesSistema[tipo] || []).some(opcao => opcao.valor === anterior)) {
+                sistema.value = anterior;
+            }
+        }
+        if (dispositivo) {
+            dispositivo.addEventListener('change', atualizarCampos);
+            atualizarCampos();
+        }
+        if (campoDownload) {
+            document.querySelectorAll('input[name="encontrou"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const encontrou = document.querySelector('input[name="encontrou"]:checked')?.value;
+                    campoDownload.hidden = encontrou !== 'Sim';
+                    document.querySelectorAll('input[name="baixou"]').forEach(item => {
+                        item.required = encontrou === 'Sim';
+                        if (encontrou !== 'Sim') item.checked = false;
+                    });
+                });
+            });
+        }
+    </script>
 </body>
 </html>
-```
