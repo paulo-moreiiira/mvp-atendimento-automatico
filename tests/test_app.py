@@ -1,4 +1,3 @@
-
 import pytest
 from app import app
 
@@ -249,16 +248,19 @@ def test_botao_whatsapp_na_recomendacao(cliente):
     resposta = cliente.post(
         "/",
         data={
+            "etapa": "confirmacao",
             "dispositivo": "Celular",
             "sistema": "Android",
             "marca": "",
+            "encontrou": "Não",
+            "baixou": "",
         },
     )
 
     texto = resposta.get_data(as_text=True)
 
     assert resposta.status_code == 200
-    assert "Falar com o vendedor pelo WhatsApp" in texto
+    assert "Finalizar atendimento pelo WhatsApp" in texto
     assert "https://wa.me/5531984539766" in texto
 
 
@@ -266,13 +268,126 @@ def test_mensagem_preparada_no_whatsapp(cliente):
     resposta = cliente.post(
         "/",
         data={
+            "etapa": "confirmacao",
             "dispositivo": "Celular",
             "sistema": "Android",
             "marca": "",
+            "encontrou": "Não",
+            "baixou": "",
         },
     )
 
     texto = resposta.get_data(as_text=True)
 
-    assert "Preciso%20de%20ajuda" in texto
-    assert "aplicativo%20recomendado" in texto
+    assert "wa.me/5531984539766?text=" in texto
+    assert "Encontrou%20o%20aplicativo" in texto
+    assert "Dispositivo%3A%20Celular" in texto
+
+
+def test_identidade_phx_stream_na_pagina_inicial(cliente):
+    resposta = cliente.get("/")
+    texto = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert "PHX Stream" in texto
+    assert "/static/img/logo-phx.png" in texto
+
+
+def test_fluxo_mostra_pergunta_se_encontrou_aplicativo(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "identificacao",
+        "dispositivo": "Smart TV",
+        "marca": "Samsung",
+        "sistema": "",
+    })
+    texto = resposta.get_data(as_text=True)
+    assert "Você conseguiu localizar o aplicativo?" in texto
+    assert "2TPlay" in texto
+
+
+def test_fluxo_nao_encontrou_gera_resumo_e_link_whatsapp(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "confirmacao",
+        "dispositivo": "Smart TV",
+        "marca": "Samsung",
+        "sistema": "",
+        "encontrou": "Não",
+        "baixou": "",
+    })
+    texto = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert "RESUMO DO ATENDIMENTO" in texto
+    assert "Encontrou o aplicativo?</dt><dd>Não</dd>" in texto
+    assert "Não se aplica" in texto
+    assert "https://wa.me/5531984539766" in texto
+    assert "Finalizar atendimento pelo WhatsApp" in texto
+
+
+def test_fluxo_encontrou_mas_nao_conseguiu_baixar(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "confirmacao",
+        "dispositivo": "Celular",
+        "sistema": "Android",
+        "marca": "",
+        "encontrou": "Sim",
+        "baixou": "Não",
+    })
+    texto = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert "Conseguiu baixar?" in texto
+    assert "Não" in texto
+    assert "wa.me/5531984539766" in texto
+
+
+def test_fluxo_encontrou_e_baixou_aplicativo(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "confirmacao",
+        "dispositivo": "TV Box",
+        "sistema": "Roku",
+        "marca": "",
+        "encontrou": "Sim",
+        "baixou": "Sim",
+    })
+    texto = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert "Max+" in texto
+    assert "Sim" in texto
+    assert "wa.me/5531984539766" in texto
+
+
+def test_fluxo_exige_resposta_sobre_localizacao(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "confirmacao",
+        "dispositivo": "Celular",
+        "sistema": "Android",
+        "marca": "",
+        "encontrou": "",
+        "baixou": "",
+    })
+    assert "Informe se conseguiu localizar o aplicativo." in resposta.get_data(as_text=True)
+
+
+def test_fluxo_exige_download_quando_encontrou(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "confirmacao",
+        "dispositivo": "Celular",
+        "sistema": "Android",
+        "marca": "",
+        "encontrou": "Sim",
+        "baixou": "",
+    })
+    assert "Informe se conseguiu baixar e instalar o aplicativo." in resposta.get_data(as_text=True)
+
+
+def test_aplicativo_indisponivel_pede_ajuda_sem_recomendacao(cliente):
+    resposta = cliente.post("/", data={
+        "etapa": "confirmacao",
+        "dispositivo": "Smart TV",
+        "marca": "Outra",
+        "sistema": "",
+        "encontrou": "Não",
+        "baixou": "",
+    })
+    texto = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert "Orientação necessária" in texto
+    assert "wa.me/5531984539766" in texto
